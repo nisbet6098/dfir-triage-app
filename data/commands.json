@@ -1,0 +1,18 @@
+{
+  "volatility3": {
+    "title": "Volatility 3 CLI Quick Reference",
+    "commands": [
+      { "name": "List Running Processes", "cmd": "python3 vol.py -f <memory.raw> windows.pslist", "desc": "Enumerates active Windows processes via the EPROCESS double-linked list." },
+      { "name": "Scan for Hidden Processes", "cmd": "python3 vol.py -f <memory.raw> windows.pstree", "desc": "Renders process relationships in a tree hierarchy to identify unlinked binaries." },
+      { "name": "Detect Code Injections (Malfind)", "cmd": "python3 vol.py -f <memory.raw> windows.malfind", "desc": "Finds memory pages marked PAGE_EXECUTE_READWRITE (PAGE_NOCACHE/VAD allocation)." },
+      { "name": "Dump Process Memory", "cmd": "python3 vol.py -f <memory.raw> -o ./output windows.dumpfiles --pid <PID>", "desc": "Extracts executable and DLL memory blocks for static analysis." }
+    ]
+  },
+  "powershell_ir": {
+    "title": "PowerShell Live Response Commands",
+    "commands": [
+      { "name": "List Active Network Connections with PID", "cmd": "Get-NetTCPConnection | Select-Object LocalAddress,LocalPort,RemoteAddress,RemotePort,State,OwningProcess | Sort-Object State", "desc": "Correlates active sockets to owning PIDs on host." },
+      { "name": "Inspect Scheduled Tasks for Persistence", "cmd": "Get-ScheduledTask | Where-Object {$_.State -ne 'Disabled'} | Select-Object TaskName, TaskPath, State", "desc": "Scans non-standard scheduled tasks configured for persistence." }
+    ]
+  }
+}
