@@ -1,0 +1,82 @@
+{
+  "windows": {
+    "title": "Windows Forensic Artifacts Locator",
+    "categories": [
+      {
+        "name": "Program Execution & Persistence",
+        "items": [
+          {
+            "name": "Prefetch Files",
+            "path": "C:\\Windows\\Prefetch\\*.pf",
+            "desc": "Evidence of application execution, run counts, timestamps, and referenced DLLs."
+          },
+          {
+            "name": "Amcache.hve",
+            "path": "C:\\Windows\\AppCompat\\Programs\\Amcache.hve",
+            "desc": "Tracks installed applications, executable SHA1 hashes, compilation times, and first-run timestamps."
+          },
+          {
+            "name": "UserAssist Registry Keys",
+            "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\UserAssist",
+            "desc": "ROT13-encoded registry keys logging GUI application launches per user account."
+          },
+          {
+            "name": "Registry Run Keys (Persistence)",
+            "path": "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run",
+            "desc": "Common autorun location for persistent payloads starting upon user logon."
+          }
+        ]
+      },
+      {
+        "name": "Event Logs (EVTX)",
+        "items": [
+          {
+            "name": "Security Log - Logon Events (Event ID 4624 / 4625)",
+            "path": "%SystemRoot%\\System32\\Winevt\\Logs\\Security.evtx",
+            "desc": "Tracks successful (4624) and failed (4625) authentication attempts with logon types (e.g. Type 3 Network, Type 10 RDP)."
+          },
+          {
+            "name": "PowerShell ScriptBlock Logging (Event ID 4104)",
+            "path": "%SystemRoot%\\System32\\Winevt\\Logs\\Microsoft-Windows-PowerShell%4Operational.evtx",
+            "desc": "Logs complete de-obfuscated PowerShell script blocks executed on the system."
+          },
+          {
+            "name": "Process Creation with Command Line (Event ID 4688 / Sysmon 1)",
+            "path": "%SystemRoot%\\System32\\Winevt\\Logs\\Microsoft-Windows-Sysmon%4Operational.evtx",
+            "desc": "Captures process creation events, parent-child process relationships, and complete command line arguments."
+          }
+        ]
+      }
+    ]
+  },
+  "linux": {
+    "title": "Linux Forensic Artifacts Locator",
+    "categories": [
+      {
+        "name": "Authentication & Execution",
+        "items": [
+          {
+            "name": "Auth / Secure Log",
+            "path": "/var/log/auth.log (Debian/Ubuntu) or /var/log/secure (RHEL/CentOS)",
+            "desc": "Tracks SSH sessions, failed logins, sudo privilege escalations, and user account creation."
+          },
+          {
+            "name": "User Shell History Files",
+            "path": "~/.bash_history, ~/.zsh_history, /root/.bash_history",
+            "desc": "Logs interactive terminal commands executed per user profile."
+          },
+          {
+            "name": "Cron Job Persistence",
+            "path": "/var/spool/cron/crontabs/*, /etc/crontab, /etc/cron.d/",
+            "desc": "Scheduled task locations commonly abused for persistent backdoor execution."
+          },
+          {
+            "name": "Systemd Service Files",
+            "path": "/etc/systemd/system/, /lib/systemd/system/",
+            "desc": "Custom service definitions used by adversaries for persistent host access."
+          }
+        ]
+      }
+    ]
+  }
+}

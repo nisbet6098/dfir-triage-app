@@ -2,17 +2,66 @@
   "volatility3": {
     "title": "Volatility 3 CLI Quick Reference",
     "commands": [
-      { "name": "List Running Processes", "cmd": "python3 vol.py -f <memory.raw> windows.pslist", "desc": "Enumerates active Windows processes via the EPROCESS double-linked list." },
-      { "name": "Scan for Hidden Processes", "cmd": "python3 vol.py -f <memory.raw> windows.pstree", "desc": "Renders process relationships in a tree hierarchy to identify unlinked binaries." },
-      { "name": "Detect Code Injections (Malfind)", "cmd": "python3 vol.py -f <memory.raw> windows.malfind", "desc": "Finds memory pages marked PAGE_EXECUTE_READWRITE (PAGE_NOCACHE/VAD allocation)." },
-      { "name": "Dump Process Memory", "cmd": "python3 vol.py -f <memory.raw> -o ./output windows.dumpfiles --pid <PID>", "desc": "Extracts executable and DLL memory blocks for static analysis." }
+      {
+        "name": "List Running Processes (pslist)",
+        "cmd": "python3 vol.py -f <memory.raw> windows.pslist",
+        "desc": "Enumerates active Windows processes via the EPROCESS double-linked list."
+      },
+      {
+        "name": "Scan for Unlinked/Hidden Processes (pstree)",
+        "cmd": "python3 vol.py -f <memory.raw> windows.pstree",
+        "desc": "Renders process relationships in a tree hierarchy to spot unlinked or parentless binaries."
+      },
+      {
+        "name": "Detect Code Injections (malfind)",
+        "cmd": "python3 vol.py -f <memory.raw> windows.malfind",
+        "desc": "Finds memory pages marked PAGE_EXECUTE_READWRITE (PAGE_NOCACHE/VAD allocation)."
+      },
+      {
+        "name": "Dump Process Memory by PID",
+        "cmd": "python3 vol.py -f <memory.raw> -o ./output windows.dumpfiles --pid <PID>",
+        "desc": "Extracts executable binaries and DLL memory blocks for static YARA or string analysis."
+      }
     ]
   },
   "powershell_ir": {
-    "title": "PowerShell Live Response Commands",
+    "title": "PowerShell Live Response Quick Reference",
     "commands": [
-      { "name": "List Active Network Connections with PID", "cmd": "Get-NetTCPConnection | Select-Object LocalAddress,LocalPort,RemoteAddress,RemotePort,State,OwningProcess | Sort-Object State", "desc": "Correlates active sockets to owning PIDs on host." },
-      { "name": "Inspect Scheduled Tasks for Persistence", "cmd": "Get-ScheduledTask | Where-Object {$_.State -ne 'Disabled'} | Select-Object TaskName, TaskPath, State", "desc": "Scans non-standard scheduled tasks configured for persistence." }
+      {
+        "name": "Active Sockets with PID Correlation",
+        "cmd": "Get-NetTCPConnection | Select-Object LocalAddress,LocalPort,RemoteAddress,RemotePort,State,OwningProcess | Sort-Object State",
+        "desc": "Correlates active inbound/outbound sockets to owning process IDs."
+      },
+      {
+        "name": "Inspect Active Scheduled Tasks for Persistence",
+        "cmd": "Get-ScheduledTask | Where-Object {$_.State -ne 'Disabled'} | Select-Object TaskName, TaskPath, State",
+        "desc": "Scans active scheduled tasks configured for persistent execution."
+      },
+      {
+        "name": "Find Unsigned Executables in Temp Folders",
+        "cmd": "Get-ChildItem -Path C:\\Users\\*\\AppData\\Local\\Temp, C:\\Windows\\Temp -Recurse -File | Get-AuthenticodeSignature | Where-Object {$_.Status -ne 'Valid'}",
+        "desc": "Identifies unverified binaries or payload drops in user and system temp directories."
+      }
+    ]
+  },
+  "cyberchef": {
+    "title": "CyberChef Incident Response Recipes",
+    "commands": [
+      {
+        "name": "Base64 & Deobfuscate PowerShell Payload",
+        "cmd": "From_Base64('A-Za-z0-9+/=',true,false) | Decode_text('UTF-16LE (1200)')",
+        "desc": "Decodes standard base64 encoded PowerShell command lines (`-EncodedCommand`)."
+      },
+      {
+        "name": "XOR Brute Force Payload Decryption",
+        "cmd": "XOR_Brute_Force(1,255,0,0,'Standard',true,10,'',false)",
+        "desc": "Brute-forces single-byte XOR keys against obfuscated shellcode strings."
+      },
+      {
+        "name": "Defang URLs / IP Addresses",
+        "cmd": "Defang_URL(true,true,true,'Valid domains and IP addresses')",
+        "desc": "Converts active IOC links into safe forms (e.g., `hxxp://` and `192[.]168[.]1[.]1`) for reporting."
+      }
     ]
   }
 }

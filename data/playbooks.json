@@ -1,0 +1,83 @@
+{
+  "ransomware": {
+    "title": "Ransomware Containment & Triage Playbook",
+    "description": "Rapid response workflow to isolate active encryption threads, preserve volatile RAM, and identify persistence.",
+    "steps": [
+      {
+        "id": 1,
+        "title": "1. Host Containment & Network Isolation",
+        "action": "Isolate host from the network immediately without shutting down the OS to preserve volatile memory.",
+        "commands": [
+          "netsh advfirewall set allprofiles state on",
+          "netsh advfirewall firewall add rule name=\"DFIR_BLOCK_ALL\" dir=in action=block",
+          "netsh advfirewall firewall add rule name=\"DFIR_BLOCK_OUT\" dir=out action=block"
+        ]
+      },
+      {
+        "id": 2,
+        "title": "2. Volatile RAM Acquisition",
+        "action": "Capture unencrypted process memory and active C2 encryption keys before powering down or rebooting.",
+        "commands": [
+          "winpmem.exe -o memory.raw --volume_offset 0",
+          "DumpIt.exe /QUIET /OUTPUT C:\\Triage\\RAM.raw"
+        ]
+      },
+      {
+        "id": 3,
+        "title": "3. Identify Active Ransomware Execution",
+        "action": "Enumerate suspicious process handles, unusual execution paths, and high disk write activities.",
+        "commands": [
+          "Get-Process | Where-Object {$_.Path -notlike \"C:\\Windows\\*\" -and $_.Path -notlike \"C:\\Program Files*\"} | Select-Object Id, ProcessName, Path",
+          "Get-NetTCPConnection -State Established | Select-Object LocalAddress, LocalPort, RemoteAddress, RemotePort, OwningProcess"
+        ]
+      }
+    ]
+  },
+  "phishing": {
+    "title": "Phishing & Malicious Payload Analysis Playbook",
+    "description": "Triage steps for email payload inspection, malicious macro detonation, and process tree analysis.",
+    "steps": [
+      {
+        "id": 1,
+        "title": "1. Extract Email Headers & Attachments",
+        "action": "Inspect Message-ID, Return-Path, DKIM/SPF alignment, and embedded URLs.",
+        "commands": [
+          "Get-Content .\\suspicious_email.eml | Select-String -Pattern '^(From|To|Subject|Return-Path|Received|Authentication-Results):'",
+          "python3 -m zipfile -e payload.zip ./extracted/"
+        ]
+      },
+      {
+        "id": 2,
+        "title": "2. Inspect Child Process Spawn Hierarchy",
+        "action": "Look for office binaries (WINWORD.EXE, EXCEL.EXE) spawning cmd.exe, powershell.exe, or wscript.exe.",
+        "commands": [
+          "Get-CimInstance Win32_Process | Where-Object {$_.ParentProcessId -ne $null} | Select-Object ProcessId, ParentProcessId, Name, CommandLine | Sort-Object ParentProcessId"
+        ]
+      }
+    ]
+  },
+  "network_exfil": {
+    "title": "Network Exfiltration & C2 Triage Playbook",
+    "description": "Detect active tunneling, unauthorized outbound SMB/RDP connections, and DNS tunneling.",
+    "steps": [
+      {
+        "id": 1,
+        "title": "1. Inspect Socket Connections",
+        "action": "Cross-examine established TCP/UDP sockets with running binaries.",
+        "commands": [
+          "Get-NetTCPConnection -State Established | Select-Object LocalAddress, LocalPort, RemoteAddress, RemotePort, OwningProcess, State",
+          "ss -tulpn"
+        ]
+      },
+      {
+        "id": 2,
+        "title": "2. Check DNS Cache for Tunneling Indicators",
+        "action": "Inspect local client DNS resolution cache for high-entropy subdomain requests.",
+        "commands": [
+          "Get-DnsClientCache | Select-Object Entry, Data, TimeToLive | Sort-Object Entry",
+          "ipconfig /displaydns"
+        ]
+      }
+    ]
+  }
+}

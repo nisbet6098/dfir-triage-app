@@ -3,25 +3,33 @@ document.addEventListener('DOMContentLoaded', async () => {
     await engine.loadData();
 
     let artifactsData = {};
+    let commandsData = {};
+
     try {
-        const artResponse = await fetch('data/artifacts.json');
-        artifactsData = await artResponse.json();
+        const [artRes, cmdRes] = await Promise.all([
+            fetch('data/artifacts.json'),
+            fetch('data/commands.json')
+        ]);
+        artifactsData = await artRes.json();
+        commandsData = await cmdRes.json();
     } catch (e) {
-        console.error("Failed to load artifacts data", e);
+        console.error("Error loading JSON data stores:", e);
     }
 
     const playbookList = document.getElementById('playbook-list');
     const artifactList = document.getElementById('artifact-list');
+    const toolsList = document.getElementById('tools-list');
     const stageTitle = document.getElementById('stage-title');
     const stageDesc = document.getElementById('stage-desc');
     const stepsGrid = document.getElementById('triage-steps');
     const commandContainer = document.getElementById('command-container');
+    const searchInput = document.getElementById('global-search');
 
     function clearActiveState() {
         document.querySelectorAll('.sidebar li').forEach(li => li.classList.remove('active'));
     }
 
-    // Helper function to create copyable terminal blocks
+    // Helper: Build copyable terminal command block
     function createCommandBlock(cmdText) {
         const block = document.createElement('div');
         block.style.cssText = `
@@ -76,6 +84,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         return block;
     }
 
+    // Render Playbook Module
     function renderPlaybook(key) {
         const playbook = engine.getPlaybook(key);
         if (!playbook) return;
@@ -115,6 +124,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
+    // Render Artifacts Module
     function renderArtifacts(targetOS) {
         const data = artifactsData[targetOS];
         if (!data) return;
@@ -161,7 +171,68 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // Event Listeners
+    // Render Tools Module
+    function renderTools(toolKey) {
+        const tool = commandsData[toolKey];
+        if (!tool) return;
+
+        stageTitle.textContent = tool.title;
+        stageDesc.textContent = "Specialized CLI commands and quick reference recipes for triage analysis.";
+        stepsGrid.innerHTML = '';
+        commandContainer.innerHTML = '<p class="placeholder-text">Select a command card above to view execution details.</p>';
+
+        tool.commands.forEach(item => {
+            const card = document.createElement('div');
+            card.className = 'step-card';
+            card.style.cssText = `
+                background: var(--bg-card);
+                border: 1px solid var(--border-color);
+                border-radius: 6px;
+                padding: 1rem;
+                cursor: pointer;
+            `;
+            card.innerHTML = `
+                <h4 style="color: var(--accent-blue); margin-bottom: 0.5rem;">${item.name}</h4>
+                <p style="font-size: 0.85rem; color: var(--text-main); font-family: var(--font-mono); word-break: break-all;">${item.cmd}</p>
+            `;
+
+            card.addEventListener('click', () => {
+                document.querySelectorAll('.step-card').forEach(c => c.style.borderColor = 'var(--border-color)');
+                card.style.borderColor = 'var(--accent-green)';
+
+                commandContainer.innerHTML = '';
+                const detailBox = document.createElement('div');
+                detailBox.style.cssText = `background: #000; border: 1px solid var(--border-color); padding: 1rem; border-radius: 4px;`;
+                detailBox.innerHTML = `
+                    <h4 style="color: var(--accent-green); margin-bottom: 0.5rem;">${item.name}</h4>
+                    <p style="color: var(--text-main); font-size: 0.9rem; margin-bottom: 0.75rem;">${item.desc}</p>
+                `;
+                detailBox.appendChild(createCommandBlock(item.cmd));
+                commandContainer.appendChild(detailBox);
+            });
+
+            stepsGrid.appendChild(card);
+        });
+    }
+
+    // Live Instant Filter
+    if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase().trim();
+            const cards = document.querySelectorAll('.step-card');
+
+            cards.forEach(card => {
+                const text = card.textContent.toLowerCase();
+                if (text.includes(query)) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
+    }
+
+    // Event Listeners for Sidebar
     playbookList.querySelectorAll('li').forEach(item => {
         item.addEventListener('click', (e) => {
             clearActiveState();
@@ -178,5 +249,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     });
 
+    if (toolsList) {
+        toolsList.querySelectorAll('li').forEach(item => {
+            item.addEventListener('click', (e) => {
+                clearActiveState();
+                e.target.classList.add('active');
+                renderTools(e.target.dataset.tool);
+            });
+        });
+    }
+
+    // Initial Default Load
     renderPlaybook('ransomware');
 });

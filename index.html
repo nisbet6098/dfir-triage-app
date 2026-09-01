@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NTCyber - DFIR Triage Assistant</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="brand">
+                <h2>🛡️ DFIR Triage</h2>
+                <span class="version">v1.2 | ntcyber.com</span>
+            </div>
+
+            <nav class="nav-section">
+                <h3>Incident Playbooks</h3>
+                <ul id="playbook-list">
+                    <li data-playbook="ransomware" class="active">Ransomware Containment</li>
+                    <li data-playbook="phishing">Phishing & Payload</li>
+                    <li data-playbook="network_exfil">Network Exfiltration</li>
+                </ul>
+            </nav>
+
+            <nav class="nav-section">
+                <h3>Forensic Artifacts</h3>
+                <ul id="artifact-list">
+                    <li data-target="windows">Windows Artifacts</li>
+                    <li data-target="linux">Linux Artifacts</li>
+                </ul>
+            </nav>
+
+            <nav class="nav-section">
+                <h3>Tool Cheat Sheets</h3>
+                <ul id="tools-list">
+                    <li data-tool="volatility3">Volatility 3</li>
+                    <li data-tool="powershell_ir">PowerShell Live IR</li>
+                    <li data-tool="cyberchef">CyberChef Recipes</li>
+                </ul>
+            </nav>
+
+            <div class="sidebar-footer">
+                <p>Host: <code>dfir.ntcyber.com</code></p>
+            </div>
+        </aside>
+
+        <!-- Main Workspace -->
+        <main class="main-content">
+            <!-- Search Header -->
+            <div class="search-bar-container">
+                <input type="text" id="global-search" placeholder="🔍 Instant Filter: search EVTX IDs, paths, registry keys, or commands (e.g. 4104, Prefetch, malfind, base64)..." />
+            </div>
+
+            <!-- Header Info Box -->
+            <header class="stage-header">
+                <h1 id="stage-title">Loading Module...</h1>
+                <p id="stage-desc">Select a module from the left navigation panel to begin field execution.</p>
+            </header>
+
+            <!-- Interactive Grid Section -->
+            <section class="workspace-grid">
+                <!-- Triage Cards Panel -->
+                <div class="panel">
+                    <h3>Execution Steps / Artifact Locations</h3>
+                    <div id="triage-steps" class="steps-container">
+                        <!-- Dynamic Cards Render Here -->
+                    </div>
+                </div>
+
+                <!-- Command Terminal / Inspector Panel -->
+                <div class="panel">
+                    <h3>Terminal Commands & Artifact Inspector</h3>
+                    <div id="command-container" class="command-box">
+                        <p class="placeholder-text">Select a step card or artifact above to populate field-ready execution commands.</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="js/triage-engine.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
